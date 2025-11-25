@@ -1,0 +1,97 @@
+# 依赖目录
+node_modules/
+bower_components/
+
+# 构建输出目录
+dist/
+build/
+out/
+.next/          # Next.js
+.nuxt/          # Nuxt.js
+dist-static/    # VuePress 静态文件
+
+# 环境变量文件（敏感信息）
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE 和编辑器配置文件
+.idea/          # WebStorm, PHPStorm 等
+.vscode/        # VS Code
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?           # Vim 交换文件
+*.lock
+.DS_Store       # macOS 系统文件
+Thumbs.db       # Windows 缩略图
+
+# 日志和调试文件
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# 测试相关
+coverage/
+.nyc_output/
+
+# 构建工具缓存
+.cache/
+.temp/
+tmp/
+
+# Cypress 测试
+cypress/videos/
+cypress/screenshots/
+
+# Storybook
+.storybook/cache/
+.storybook-static/
+
+# 运行时数据
+*.pid
+*.seed
+*.pid.lock
+
+# Serverless
+.serverless/
+
+# Electron
+releases/
+
+# 忽略所有 .js 文件中由 TypeScript 编译生成的，但保留 src/ 中的
+# （如果你使用 TypeScript，通常应该在 tsconfig.json 中配置输出目录）
+# 但注意：不要盲目忽略 .js 文件，如果 src 里混有源 JS，需要保留
+# 通常推荐只忽略构建目录，而不是按扩展名忽略
+# dist/**/*.js 已由 dist/ 忽略了
+
+# 忽略打包文件
+*.tgz
+*.zip
+*.tar.gz
+
+# 自动化工具
+npm/
+.vercel/       # Vercel 部署缓存
+
+# 编辑器自动保存文件
+*.sublime-project
+*.sublime-workspace
+
+# Prettier 或 ESLint 缓存
+.cache_prettier/
+
+# 忽略 Chrome 扩展开发时的 .crx 文件
+*.crx
+
+# 其他
+.DS_Store?
+Icon?
+*.hot-update.js
+*.hot-update.json

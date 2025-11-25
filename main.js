@@ -103,91 +103,36 @@ const logoImg = new Image();
 logoImg.crossOrigin = "Anonymous";
 logoImg.src = "https://threejs.org/files/favicon.ico";
 
-// UI 元素
-const btnExport = document.getElementById('export-btn');
-const selectRes = document.getElementById('resolution-select');
-const divCustomRes = document.getElementById('custom-res');
-const overlay = document.getElementById('loading-overlay');
-const progressBar = document.getElementById('progress-bar');
-const statusText = document.getElementById('status-text');
 
-// 切换自定义分辨率显示
-selectRes.addEventListener('change', (e) => {
-    divCustomRes.style.display = e.target.value === 'custom' ? 'block' : 'none';
-});
 
-// 导出按钮点击事件
-btnExport.addEventListener('click', async () => {
-    // 1. 获取分辨率
-    let width, height;
-    const val = selectRes.value;
-    if (val === 'custom') {
-        width = parseInt(document.getElementById('res-w').value) || 1920;
-        height = parseInt(document.getElementById('res-h').value) || 1080;
-    } else {
-        [width, height] = val.split('x').map(Number);
+/**
+ * 核心导出函数，供 Vue 组件调用
+ * @param {Object} config 导出配置
+ * @returns {Promise<Blob>}
+ */
+export async function captureScene(config) {
+    const { width, height, format, watermark, onProgress } = config;
+
+    // 构建水印配置对象
+    let watermarkConfig = null;
+    if (watermark) {
+        watermarkConfig = {
+            text: watermark,
+            fontSize: Math.floor(width * 0.025), // 动态字体大小
+            color: 'rgba(255, 255, 255, 0.8)',
+            position: 'bottom-right',
+            image: logoImg, // 同时加上图片水印
+            scale: 0.1 // 图片占宽度的 10%
+        };
     }
 
-    // 2. 获取其他配置
-    const format = document.getElementById('format-select').value;
-    const hasWatermark = document.getElementById('watermark-check').checked;
-    const watermarkText = document.getElementById('watermark-text').value;
+    return await screenshotManager.capture(scene, camera, {
+        width,
+        height,
+        format,
+        quality: 0.95,
+        watermark: watermarkConfig,
+        onProgress
+    });
+}
 
-    // 3. 构建水印配置
-    const watermarkConfig = hasWatermark ? {
-        text: watermarkText,
-        fontSize: Math.floor(width * 0.025), // 动态字体大小
-        color: 'rgba(255, 255, 255, 0.8)',
-        position: 'bottom-right',
-        image: logoImg, // 同时加上图片水印
-        scale: 0.1 // 图片占宽度的 10%
-    } : null;
-
-    // 4. 锁定 UI
-    btnExport.disabled = true;
-    overlay.classList.add('active');
-    progressBar.style.width = '0%';
-    statusText.innerText = `正在初始化导出 (${width}x${height})...`;
-
-    try {
-        // 5. 调用核心导出方法
-        const blob = await screenshotManager.capture(scene, camera, {
-            width,
-            height,
-            format,
-            quality: 0.95,
-            watermark: watermarkConfig,
-            onProgress: (progress) => {
-                const percent = Math.round(progress * 100);
-                progressBar.style.width = `${percent}%`;
-                statusText.innerText = `渲染中... ${percent}%`;
-            }
-        });
-
-        // 6. 下载文件
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        const ext = format.split('/')[1];
-        link.href = url;
-        link.download = `screenshot_${width}x${height}_${Date.now()}.${ext}`;
-        link.click();
-
-        // 延迟释放 URL
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-
-        statusText.innerText = "导出完成!";
-        setTimeout(() => {
-            overlay.classList.remove('active');
-            btnExport.disabled = false;
-        }, 500);
-
-    } catch (err) {
-        console.error(err);
-        statusText.innerText = "导出失败: " + err.message;
-        alert("导出失败，请查看控制台");
-        setTimeout(() => {
-            overlay.classList.remove('active');
-            btnExport.disabled = false;
-        }, 2000);
-    }
-});
