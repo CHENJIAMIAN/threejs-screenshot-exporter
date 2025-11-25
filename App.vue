@@ -6,14 +6,14 @@
     </div>
 
     <!-- 导出弹窗组件 -->
-    <ExportDialogOptimized ref="exportDialogRef" @export="handleExport" />
+    <ExportImageDialog ref="exportDialogRef" @export="handleExport" />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { Download } from '@element-plus/icons-vue'
-import ExportDialogOptimized from './ExportDialogOptimized.vue'
+import ExportImageDialog from './ExportImageDialog.vue'
 import { captureScene } from './main.js'
 
 const exportDialogRef = ref(null)
