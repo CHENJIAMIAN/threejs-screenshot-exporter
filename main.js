@@ -98,20 +98,13 @@ window.addEventListener('resize', () => {
 // 初始化管理器
 const screenshotManager = new ScreenshotManager(renderer);
 
-// 预加载一个图片作为水印示例 (Three.js logo)
-const logoImg = new Image();
-logoImg.crossOrigin = "Anonymous";
-logoImg.src = "https://threejs.org/files/favicon.ico";
-
-
-
 /**
  * 核心导出函数，供 Vue 组件调用
  * @param {Object} config 导出配置
  * @returns {Promise<Blob>}
  */
 export async function captureScene(config) {
-    const { width, height, format, watermark, onProgress } = config;
+    const { width, height, format, watermark, watermarkImage, onProgress } = config;
 
     // 构建水印配置对象
     let watermarkConfig = null;
@@ -120,10 +113,14 @@ export async function captureScene(config) {
             text: watermark,
             fontSize: Math.floor(width * 0.025), // 动态字体大小
             color: 'rgba(255, 255, 255, 0.8)',
-            position: 'bottom-right',
-            image: logoImg, // 同时加上图片水印
-            scale: 0.1 // 图片占宽度的 10%
+            position: 'bottom-right'
         };
+
+        // 如果用户提供了水印图片，则添加图片水印
+        if (watermarkImage) {
+            watermarkConfig.image = watermarkImage;
+            watermarkConfig.scale = 0.1; // 图片占宽度的 10%
+        }
     }
 
     return await screenshotManager.capture(scene, camera, {
