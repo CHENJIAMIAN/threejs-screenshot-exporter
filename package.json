@@ -1,6 +1,27 @@
 {
-  "name": "threejs-export-demo",
+  "name": "threejs-screenshot-exporter",
   "version": "1.0.0",
+  "description": "工业级 Three.js 高清截图导出工具,支持超高分辨率渲染、自定义水印和多种图片格式",
+  "author": "CHENJIAMIAN",
+  "license": "MIT",
+  "keywords": [
+    "threejs",
+    "screenshot",
+    "export",
+    "high-resolution",
+    "watermark",
+    "tiled-rendering",
+    "3d",
+    "webgl"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CHENJIAMIAN/threejs-screenshot-exporter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CHENJIAMIAN/threejs-screenshot-exporter/issues"
+  },
+  "homepage": "https://github.com/CHENJIAMIAN/threejs-screenshot-exporter#readme",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
