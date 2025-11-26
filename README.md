@@ -7,8 +7,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Three.js](https://img.shields.io/badge/Three.js-0.164.1-blue.svg)](https://threejs.org/)
 [![Vue](https://img.shields.io/badge/Vue-3.4.0-green.svg)](https://vuejs.org/)
+[![Deploy to GitHub Pages](https://github.com/CHENJIAMIAN/threejs-screenshot-exporter/actions/workflows/deploy.yml/badge.svg)](https://github.com/CHENJIAMIAN/threejs-screenshot-exporter/actions/workflows/deploy.yml)
 
-[在线演示](#) | [功能特性](#功能特性) | [快速开始](#快速开始)
+[🚀 在线演示](https://chenjiamian.github.io/threejs-screenshot-exporter/) | [功能特性](#功能特性) | [快速开始](#快速开始) | [📖 部署指南](DEPLOY.md)
 
 </div>
 
@@ -66,6 +67,20 @@ npm run dev
 ```bash
 npm run build
 ```
+
+### 🌐 部署到 GitHub Pages
+
+项目已配置自动部署,只需推送到 main 分支:
+
+```bash
+git add .
+git commit -m "更新内容"
+git push origin main
+```
+
+部署完成后访问: https://chenjiamian.github.io/threejs-screenshot-exporter/
+
+详细部署说明请查看 [DEPLOY.md](DEPLOY.md)
 
 ---
 

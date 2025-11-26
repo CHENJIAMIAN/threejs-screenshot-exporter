@@ -25,7 +25,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && echo 'Build complete! Push to main branch to deploy.'"
   },
   "dependencies": {
     "element-plus": "^2.8.0",
