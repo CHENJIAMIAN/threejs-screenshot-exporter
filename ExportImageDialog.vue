@@ -81,7 +81,7 @@
 
         <el-collapse-transition>
           <div v-if="form.hasWatermark" style="margin-top: 16px;">
-            <el-form-item label="水印内容文字" style="margin-bottom: 0;">
+            <el-form-item label="水印内容文字" style="margin-bottom: 12px;">
               <el-input
                 v-model="form.watermarkText"
                 placeholder="请输入将在画面中显示的水印文字"
@@ -89,6 +89,68 @@
                 :prefix-icon="EditPen"
               />
             </el-form-item>
+
+            <el-row :gutter="20">
+                <el-col :span="12">
+                     <el-form-item label="水印颜色">
+                        <el-color-picker v-model="form.watermarkColor" show-alpha />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                     <el-form-item label="全屏平铺">
+                        <el-switch v-model="form.watermarkRepetition" />
+                    </el-form-item>
+                </el-col>
+            </el-row>
+
+            <!-- 新增：平铺间距控件，仅全屏平铺时显示 -->
+            <el-collapse-transition>
+              <div v-if="form.watermarkRepetition">
+                <el-form-item label="平铺间距 (像素)">
+                  <el-slider 
+                    v-model="form.watermarkSpacing" 
+                    :min="50" 
+                    :max="2000" 
+                    :step="10" 
+                    show-input 
+                  />
+                </el-form-item>
+              </div>
+            </el-collapse-transition>
+
+            <!-- 水印位置配置（仅在关闭全屏平铺时显示） -->
+            <el-collapse-transition>
+              <div v-if="!form.watermarkRepetition">
+                <el-form-item label="水印位置">
+                  <el-radio-group v-model="form.watermarkPosition" style="width: 100%;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                      <el-radio-button label="top-left">左上</el-radio-button>
+                      <el-radio-button label="top-center">居中上</el-radio-button>
+                      <el-radio-button label="top-right">右上</el-radio-button>
+                      <el-radio-button label="center-left">左中</el-radio-button>
+                      <el-radio-button label="center">正中</el-radio-button>
+                      <el-radio-button label="center-right">右中</el-radio-button>
+                      <el-radio-button label="bottom-left">左下</el-radio-button>
+                      <el-radio-button label="bottom-center">居中下</el-radio-button>
+                      <el-radio-button label="bottom-right">右下</el-radio-button>
+                    </div>
+                  </el-radio-group>
+                </el-form-item>
+              </div>
+            </el-collapse-transition>
+
+            <el-form-item label="旋转角度">
+                <el-slider v-model="form.watermarkAngle" :min="-180" :max="180" :marks="{0:'0°', 90:'90°', '-90':'-90°'}" />
+            </el-form-item>
+
+            <el-form-item label="字体大小">
+                 <el-slider v-model="form.watermarkFontSize" :min="12" :max="200" show-input />
+            </el-form-item>
+
+            <div class="preview-container">
+                <div class="preview-label">水印预览</div>
+                <canvas ref="previewCanvasRef" class="preview-canvas"></canvas>
+            </div>
           </div>
         </el-collapse-transition>
       </el-card>
@@ -106,10 +168,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 // 需要引入图标
 import { CloseBold, EditPen, Download } from '@element-plus/icons-vue'
+import { drawWatermark } from './WatermarkUtils.js'
 
 // 定义事件
 const emit = defineEmits(['export'])
@@ -117,6 +180,7 @@ const emit = defineEmits(['export'])
 const visible = ref(false)
 const exporting = ref(false)
 const formRef = ref(null)
+const previewCanvasRef = ref(null)
 
 // 表单数据
 const form = reactive({
@@ -125,7 +189,13 @@ const form = reactive({
   customHeight: 1080,
   format: 'image/png',
   hasWatermark: true, // Switch 默认状态
-  watermarkText: 'Three.js Industrial Demo'
+  watermarkText: 'Three.js Industrial Demo',
+  watermarkColor: 'rgba(255, 255, 255, 0.6)',
+  watermarkRepetition: true, // 默认开启全屏平铺
+  watermarkAngle: 45,
+  watermarkFontSize: 24,
+  watermarkSpacing: 1280,  // 新增：默认间距，匹配原3x3网格
+  watermarkPosition: 'bottom-right' // 水印位置（仅在非平铺模式下使用）
 })
 
 const resolutionOptions = [
@@ -144,8 +214,90 @@ const finalResolution = computed(() => {
   }
 })
 
-const open = () => { visible.value = true }
+const open = () => { 
+    visible.value = true 
+    nextTick(() => {
+        updatePreview()
+    })
+}
 const handleClose = () => { visible.value = false }
+
+const updatePreview = async () => {
+    if (!previewCanvasRef.value) return;
+    
+    const canvas = previewCanvasRef.value;
+    const ctx = canvas.getContext('2d');
+    
+    const containerWidth = canvas.parentElement.clientWidth;
+    const actualRes = finalResolution.value;
+    const actualAspect = actualRes.width / actualRes.height;
+    
+    // 计算预览尺寸，匹配实际宽高比，最大适应容器（宽≤容器宽，高≤200px）
+    let previewWidth = Math.min(containerWidth, 400);
+    let previewHeight = previewWidth / actualAspect;
+    if (previewHeight > 200) {
+        previewHeight = 200;
+        previewWidth = previewHeight * actualAspect;
+    }
+    
+    canvas.width = previewWidth;
+    canvas.height = previewHeight;
+    
+    // 绘制背景
+    ctx.fillStyle = '#333';
+    ctx.fillRect(0, 0, previewWidth, previewHeight);
+    
+    // 棋盘网格模拟透明背景，固定像素大小
+    ctx.fillStyle = '#444';
+    const gridSize = 10;
+    for(let i = 0; i < previewWidth; i += gridSize * 2) {
+        for(let j = 0; j < previewHeight; j += gridSize * 2) {
+            ctx.fillRect(i, j, gridSize, gridSize);
+            ctx.fillRect(i + gridSize, j + gridSize, gridSize, gridSize);
+        }
+    }
+    
+    // 水印预览：scale模拟实际尺寸，确保相对位置/大小一致
+    if (form.hasWatermark) {
+        ctx.save();
+        
+        const scaleX = previewWidth / actualRes.width;
+        const scaleY = previewHeight / actualRes.height;
+        ctx.scale(scaleX, scaleY);
+        
+        // 与实际导出相同的配置
+        const previewConfig = {
+            text: form.watermarkText,
+            color: form.watermarkColor,
+            fontSize: form.watermarkFontSize,
+            repetition: form.watermarkRepetition,
+            angle: form.watermarkAngle,
+            position: form.watermarkPosition,
+            spacing: form.watermarkSpacing
+        };
+        
+        await drawWatermark(ctx, actualRes.width, actualRes.height, previewConfig);
+        
+        ctx.restore();
+    }
+}
+
+// 监听表单变化更新预览
+watch(form, () => {
+    if (visible.value) {
+        updatePreview();
+    }
+}, { deep: true });
+
+// 监听水印开关变化，确保切换时立即更新预览
+watch(() => form.hasWatermark, (newVal) => {
+    if (visible.value) {
+        console.log('水印开关状态变化:', newVal);
+        nextTick(() => {
+            updatePreview();
+        });
+    }
+});
 
 const handleExport = async () => {
   // 简单的校验
@@ -165,6 +317,12 @@ const handleExport = async () => {
     height: finalResolution.value.height,
     format: form.format,
     watermark: form.hasWatermark ? form.watermarkText : null,
+    watermarkColor: form.hasWatermark ? form.watermarkColor : null,
+    watermarkRepetition: form.hasWatermark ? form.watermarkRepetition : false,
+    watermarkAngle: form.hasWatermark ? form.watermarkAngle : 0,
+    watermarkFontSize: form.hasWatermark ? form.watermarkFontSize : 0,
+    watermarkSpacing: form.hasWatermark ? form.watermarkSpacing : 1280,  // 新增
+    watermarkPosition: form.hasWatermark ? form.watermarkPosition : 'bottom-right',
   }
   
   console.log('准备导出数据:', exportData)
@@ -254,5 +412,26 @@ defineExpose({ open })
 :deep(.el-radio-group .el-radio-button__inner) {
     width: 100%;
     padding: 10px 0; /* 增加点击区域高度 */
+}
+
+.preview-container {
+    margin-top: 20px;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.preview-label {
+    background: #f5f7fa;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #909399;
+    border-bottom: 1px solid #ebeef5;
+}
+
+.preview-canvas {
+    display: block;
+    width: 100%;
+    height: 200px;
 }
 </style>

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { drawWatermark } from './WatermarkUtils.js';
 
 /**
  * 工业级截图管理器
@@ -170,54 +171,6 @@ export class ScreenshotManager {
      * 内部方法：绘制水印
      */
     async _drawWatermark(ctx, width, height, config) {
-        const padding = Math.max(20, width * 0.02); // 动态边距
-
-        // 1. 图片水印
-        if (config.image) {
-            try {
-                const img = config.image;
-                // 默认占宽度的 15%
-                const w = width * (config.scale || 0.15);
-                const h = w * (img.height / img.width);
-
-                let x = width - w - padding;
-                let y = height - h - padding;
-
-                if (config.position === 'top-left') { x = padding; y = padding; }
-                if (config.position === 'bottom-left') { x = padding; y = height - h - padding; }
-                if (config.position === 'top-right') { x = width - w - padding; y = padding; }
-                if (config.position === 'center') { x = (width - w) / 2; y = (height - h) / 2; }
-
-                ctx.drawImage(img, x, y, w, h);
-            } catch (e) {
-                console.warn("[截图] 水印图片绘制失败:", e);
-            }
-        }
-
-        // 2. 文字水印
-        if (config.text) {
-            const fontSize = config.fontSize || Math.floor(width * 0.03); // 默认占宽度的 3%
-            ctx.font = config.font || `bold ${fontSize}px "Microsoft YaHei", Arial, sans-serif`;
-            ctx.fillStyle = config.color || 'rgba(255, 255, 255, 0.6)';
-            ctx.textBaseline = 'bottom';
-
-            const textMetrics = ctx.measureText(config.text);
-            const textWidth = textMetrics.width;
-
-            let x = width - textWidth - padding;
-            let y = height - padding;
-
-            if (config.position === 'top-left') {
-                x = padding;
-                y = padding + fontSize;
-            }
-            if (config.position === 'center') {
-                x = (width - textWidth) / 2;
-                y = height / 2 + fontSize / 2;
-            }
-            // 更多位置逻辑可按需添加...
-
-            ctx.fillText(config.text, x, y);
-        }
+        await drawWatermark(ctx, width, height, config);
     }
 }

@@ -104,16 +104,32 @@ const screenshotManager = new ScreenshotManager();
  * @returns {Promise<Blob>}
  */
 export async function captureScene(config) {
-    const { width, height, format, watermark, watermarkImage, onProgress } = config;
+    const {
+        width,
+        height,
+        format,
+        watermark,
+        watermarkImage,
+        watermarkRepetition,
+        watermarkAngle,
+        watermarkColor,
+        watermarkFontSize,
+        watermarkSpacing,  // 新增：解构间距参数
+        watermarkPosition, // 添加水印位置参数
+        onProgress
+    } = config;
 
     // 构建水印配置对象
     let watermarkConfig = null;
     if (watermark) {
         watermarkConfig = {
             text: watermark,
-            fontSize: Math.floor(width * 0.025), // 动态字体大小
-            color: 'rgba(255, 255, 255, 0.8)',
-            position: 'bottom-right'
+            fontSize: watermarkFontSize || Math.floor(width * 0.025), // 动态字体大小
+            color: watermarkColor || 'rgba(255, 255, 255, 0.8)',
+            position: watermarkPosition || 'bottom-right', // 使用传递的位置参数
+            repetition: watermarkRepetition || false,
+            angle: watermarkAngle || 0,
+            spacing: watermarkSpacing || (width / 3)  // 新增：间距参数，默认匹配3列
         };
 
         // 如果用户提供了水印图片，则添加图片水印
