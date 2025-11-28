@@ -96,7 +96,7 @@ window.addEventListener('resize', () => {
 // --- 4. 截图功能集成 ---
 
 // 初始化管理器
-const screenshotManager = new ScreenshotManager(renderer);
+const screenshotManager = new ScreenshotManager();
 
 /**
  * 核心导出函数，供 Vue 组件调用
@@ -123,7 +123,7 @@ export async function captureScene(config) {
         }
     }
 
-    return await screenshotManager.capture(scene, camera, {
+    return await screenshotManager.capture(renderer, scene, camera, {
         width,
         height,
         format,

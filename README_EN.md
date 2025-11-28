@@ -78,10 +78,10 @@ npm run build
 ```javascript
 import { ScreenshotManager } from './ScreenshotManager.js';
 
-const screenshotManager = new ScreenshotManager(renderer);
+const screenshotManager = new ScreenshotManager();
 
 // Capture scene
-const blob = await screenshotManager.capture(scene, camera, {
+const blob = await screenshotManager.capture(renderer, scene, camera, {
   width: 3840,
   height: 2160,
   format: 'image/png',
@@ -99,7 +99,7 @@ link.click();
 ### Adding Watermarks
 
 ```javascript
-const blob = await screenshotManager.capture(scene, camera, {
+const blob = await screenshotManager.capture(renderer, scene, camera, {
   width: 3840,
   height: 2160,
   format: 'image/png',
@@ -118,7 +118,7 @@ const blob = await screenshotManager.capture(scene, camera, {
 ### Progress Callback
 
 ```javascript
-const blob = await screenshotManager.capture(scene, camera, {
+const blob = await screenshotManager.capture(renderer, scene, camera, {
   width: 7680,
   height: 4320,
   onProgress: (progress) => {

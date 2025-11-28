@@ -11,10 +11,6 @@ import * as THREE from 'three';
  */
 export class ScreenshotManager {
     constructor(renderer) {
-        this.renderer = renderer;
-        this.maxTextureSize = renderer.capabilities.maxTextureSize || 4096;
-        // 限制单块最大尺寸，留出显存余量，防止崩溃
-        this.tileSize = Math.min(this.maxTextureSize, 2048); 
     }
 
     /**
@@ -24,7 +20,11 @@ export class ScreenshotManager {
      * @param {Object} options 配置项
      * @returns {Promise<Blob>}
      */
-    async capture(scene, camera, options = {}) {
+    async capture(renderer, scene, camera, options = {}) {
+        this.renderer = renderer;
+        this.maxTextureSize = renderer.capabilities.maxTextureSize || 4096;
+        // 限制单块最大尺寸，留出显存余量，防止崩溃
+        this.tileSize = Math.min(this.maxTextureSize, 2048);
         const {
             width = 1920,
             height = 1080,
@@ -42,7 +42,7 @@ export class ScreenshotManager {
         const originalPixelRatio = this.renderer.getPixelRatio();
         const originalAspect = camera.aspect;
         const originalShadowMapType = this.renderer.shadowMap.type;
-        
+
         // 保存相机视口偏移状态
         const originalViewOffset = {
             enabled: camera.view !== null,
@@ -70,7 +70,7 @@ export class ScreenshotManager {
         try {
             // 锁定渲染器设置
             this.renderer.setPixelRatio(1); // 导出时强制 1:1 物理像素
-            
+
             // 优化：临时提升阴影质量 (可选，视需求开启)
             // this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
 
@@ -142,7 +142,7 @@ export class ScreenshotManager {
             // 6. 恢复原始状态
             this.renderer.setPixelRatio(originalPixelRatio);
             this.renderer.setSize(originalSize.x, originalSize.y, true);
-            
+
             if (originalViewOffset.enabled) {
                 camera.setViewOffset(
                     originalViewOffset.fullWidth,
@@ -155,12 +155,12 @@ export class ScreenshotManager {
             } else {
                 camera.clearViewOffset();
             }
-            
+
             camera.updateProjectionMatrix();
-            
+
             // 重新渲染一帧，避免屏幕闪烁或黑屏
             this.renderer.render(scene, camera);
-            
+
             // 清理临时 Canvas (虽然 JS 有 GC，但手动置空是个好习惯)
             // canvas = null; 
         }
@@ -179,14 +179,14 @@ export class ScreenshotManager {
                 // 默认占宽度的 15%
                 const w = width * (config.scale || 0.15);
                 const h = w * (img.height / img.width);
-                
+
                 let x = width - w - padding;
                 let y = height - h - padding;
 
                 if (config.position === 'top-left') { x = padding; y = padding; }
                 if (config.position === 'bottom-left') { x = padding; y = height - h - padding; }
                 if (config.position === 'top-right') { x = width - w - padding; y = padding; }
-                if (config.position === 'center') { x = (width - w)/2; y = (height - h)/2; }
+                if (config.position === 'center') { x = (width - w) / 2; y = (height - h) / 2; }
 
                 ctx.drawImage(img, x, y, w, h);
             } catch (e) {
@@ -200,20 +200,20 @@ export class ScreenshotManager {
             ctx.font = config.font || `bold ${fontSize}px "Microsoft YaHei", Arial, sans-serif`;
             ctx.fillStyle = config.color || 'rgba(255, 255, 255, 0.6)';
             ctx.textBaseline = 'bottom';
-            
+
             const textMetrics = ctx.measureText(config.text);
             const textWidth = textMetrics.width;
 
             let x = width - textWidth - padding;
             let y = height - padding;
 
-            if (config.position === 'top-left') { 
-                x = padding; 
-                y = padding + fontSize; 
+            if (config.position === 'top-left') {
+                x = padding;
+                y = padding + fontSize;
             }
-            if (config.position === 'center') { 
-                x = (width - textWidth) / 2; 
-                y = height / 2 + fontSize / 2; 
+            if (config.position === 'center') {
+                x = (width - textWidth) / 2;
+                y = height / 2 + fontSize / 2;
             }
             // 更多位置逻辑可按需添加...
 

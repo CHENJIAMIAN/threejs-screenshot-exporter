@@ -91,10 +91,10 @@ git push origin main
 ```javascript
 import { ScreenshotManager } from './ScreenshotManager.js';
 
-const screenshotManager = new ScreenshotManager(renderer);
+const screenshotManager = new ScreenshotManager();
 
 // 捕获场景
-const blob = await screenshotManager.capture(scene, camera, {
+const blob = await screenshotManager.capture(renderer, scene, camera, {
   width: 3840,
   height: 2160,
   format: 'image/png',
@@ -112,7 +112,7 @@ link.click();
 ### 添加水印
 
 ```javascript
-const blob = await screenshotManager.capture(scene, camera, {
+const blob = await screenshotManager.capture(renderer, scene, camera, {
   width: 3840,
   height: 2160,
   format: 'image/png',
@@ -131,7 +131,7 @@ const blob = await screenshotManager.capture(scene, camera, {
 ### 进度回调
 
 ```javascript
-const blob = await screenshotManager.capture(scene, camera, {
+const blob = await screenshotManager.capture(renderer, scene, camera, {
   width: 7680,
   height: 4320,
   onProgress: (progress) => {
