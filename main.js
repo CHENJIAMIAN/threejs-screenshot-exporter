@@ -99,6 +99,27 @@ window.addEventListener('resize', () => {
 const screenshotManager = new ScreenshotManager();
 
 /**
+ * 从 File 对象加载 Image
+ * @param {File} file 
+ * @returns {Promise<HTMLImageElement>}
+ */
+function loadImageFromFile(file) {
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            URL.revokeObjectURL(url); // 释放内存
+            resolve(img);
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error('Failed to load watermark image'));
+        };
+        img.src = url;
+    });
+}
+
+/**
  * 核心导出函数，供 Vue 组件调用
  * @param {Object} config 导出配置
  * @returns {Promise<Blob>}
@@ -116,6 +137,9 @@ export async function captureScene(config) {
         watermarkFontSize,
         watermarkSpacing,  // 新增：解构间距参数
         watermarkPosition, // 添加水印位置参数
+        watermarkType,
+        watermarkImageScale,
+        watermarkOpacity,
         onProgress
     } = config;
 
@@ -133,9 +157,12 @@ export async function captureScene(config) {
         };
 
         // 如果用户提供了水印图片，则添加图片水印
-        if (watermarkImage) {
-            watermarkConfig.image = watermarkImage;
-            watermarkConfig.scale = 0.1; // 图片占宽度的 10%
+        if (watermarkImage && (watermarkType === 'image' || watermarkType === 'both')) {
+            // 将 File 对象加载为 HTMLImageElement
+            const loadedImage = await loadImageFromFile(watermarkImage);
+            watermarkConfig.image = loadedImage;
+            watermarkConfig.opacity = watermarkOpacity || 0.8;
+            watermarkConfig.scale = watermarkImageScale || 1;
         }
     }
 

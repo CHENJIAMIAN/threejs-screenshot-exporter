@@ -17,14 +17,16 @@ export async function drawWatermark(ctx, width, height, config) {
         if (config.angle) {
             ctx.rotate((config.angle * Math.PI) / 180);
         }
+        ctx.globalAlpha = config.opacity || 1;
 
         // 1. 图片水印
         if (config.image) {
             try {
                 const img = config.image;
-                // 默认占宽度的 15%
-                const w = width * (config.scale || 0.15);
-                const h = w * (img.height / img.width);
+                // 基础大小为宽度的 15%，然后应用用户的缩放倍数
+                const baseW = width * 0.15;
+                const w = baseW * (config.scale || 1);
+                const h = w * (img.naturalHeight / img.naturalWidth);
                 // 居中绘制以便旋转
                 ctx.drawImage(img, -w / 2, -h / 2, w, h);
             } catch (e) {
