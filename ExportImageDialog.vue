@@ -160,15 +160,28 @@
         <el-collapse-transition>
           <div v-if="form.imageWatermark.enabled" class="watermark-group" style="margin-top: 16px;">
             <el-form-item label="水印图片">
-              <el-upload
-                class="watermark-upload"
-                :auto-upload="false"
-                :show-file-list="false"
-                @change="handleImageUpload"
-                accept=".jpg,.jpeg,.png,.bmp"
-              >
-                <el-button size="small" type="primary">上传图片</el-button>
-              </el-upload>
+              <div class="watermark-upload-container">
+                <el-upload
+                  class="watermark-upload"
+                  :auto-upload="false"
+                  :show-file-list="false"
+                  @change="handleImageUpload"
+                  accept=".jpg,.jpeg,.png,.bmp"
+                >
+                  <el-button size="small" type="primary">
+                    {{ form.imageWatermark.imageUrl ? '重新上传' : '上传图片' }}
+                  </el-button>
+                </el-upload>
+                <el-button 
+                  v-if="form.imageWatermark.imageUrl" 
+                  size="small" 
+                  type="danger" 
+                  @click="handleDeleteImage"
+                  style="margin-left: 8px;"
+                >
+                  删除图片
+                </el-button>
+              </div>
             </el-form-item>
 
             <!-- 单列布局：旋转角度 -->
@@ -249,7 +262,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 // 需要引入图标
 import { CloseBold, EditPen, Download } from '@element-plus/icons-vue'
@@ -316,25 +329,21 @@ const open = () => {
     })
 }
 const handleClose = () => {
-  // 【注意】延迟清理URL，避免在导出过程中被销毁
-  // 如果正在导出，不清理资源
-  if (!exporting.value) {
-    if (form.imageWatermark.imageUrl) {
-      URL.revokeObjectURL(form.imageWatermark.imageUrl)
-      form.imageWatermark.imageUrl = ''
-    }
-    form.imageWatermark.image = null
-  }
-  
+  // 只关闭对话框，不清理图片资源
+  // 这样用户第二次打开时可以看到之前上传的图片
   visible.value = false
 }
 
 const handleImageUpload = (file) => {
-  // 清理旧资源
+  // 清理旧资源，避免内存泄漏
   if (form.imageWatermark.imageUrl) {
     URL.revokeObjectURL(form.imageWatermark.imageUrl)
+    form.imageWatermark.imageUrl = ''
   }
+  form.imageWatermark.image = null
+  form.imageWatermark.imageFile = null
   
+  // 设置新资源
   form.imageWatermark.imageFile = file.raw
   form.imageWatermark.imageUrl = URL.createObjectURL(file.raw)
   form.imageWatermark.image = new Image()
@@ -355,6 +364,7 @@ const handleImageUpload = (file) => {
       form.imageWatermark.imageUrl = ''
     }
     form.imageWatermark.image = null
+    form.imageWatermark.imageFile = null
   }
   
   // 检查图片是否已经在浏览器缓存中
@@ -366,6 +376,29 @@ const handleImageUpload = (file) => {
   
   // 阻止 el-upload 的自动上传行为
   return false
+}
+
+const handleDeleteImage = () => {
+  // 清理图片资源
+  if (form.imageWatermark.imageUrl) {
+    URL.revokeObjectURL(form.imageWatermark.imageUrl)
+  }
+  
+  // 重置相关状态
+  form.imageWatermark.imageUrl = ''
+  form.imageWatermark.image = null
+  form.imageWatermark.imageFile = null
+  
+  // 保持开关状态不变，让用户可以继续配置其他属性
+  // 如果需要禁用，可以取消下面这行的注释
+  // form.imageWatermark.enabled = false
+  
+  ElMessage.success('图片水印已删除')
+  
+  // 更新预览
+  nextTick(() => {
+    updatePreview()
+  })
 }
 
 const updatePreview = async () => {
@@ -498,6 +531,8 @@ const handleExport = async () => {
     onSuccess: () => {
       exporting.value = false
       ElMessage.success('导出成功')
+      
+      // 不清理图片资源，让用户下次还可以使用
       handleClose()
     },
     // 导出失败的回调
@@ -539,6 +574,14 @@ watch([
   nextTick(() => {
     updatePreview()
   })
+})
+
+// 组件卸载时清理资源
+onUnmounted(() => {
+  // 清理 Blob URL 避免内存泄漏
+  if (form.imageWatermark.imageUrl) {
+    URL.revokeObjectURL(form.imageWatermark.imageUrl)
+  }
 })
 
 defineExpose({ open })
@@ -634,5 +677,14 @@ defineExpose({ open })
   border-radius: 4px;
   padding: 16px;
   border: 1px dashed #dcdfe6;
+}
+
+.watermark-upload-container {
+  display: flex;
+  align-items: center;
+}
+
+.watermark-upload-container .watermark-upload {
+  display: inline-block;
 }
 </style>
