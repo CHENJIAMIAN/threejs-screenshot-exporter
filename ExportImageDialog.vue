@@ -63,7 +63,7 @@
         
         <el-form-item label="目标格式" style="margin-top: 18px;">
           <!-- UX优化:使用按钮组代替下拉框,选项直接可见 -->
-          <el-radio-group v-model="form.format" style="width: 100%; display: flex;">
+          <el-radio-group v-model="form.format" class="target-format-group" style="width: 100%; display: flex;">
             <el-radio-button label="image/png" style="flex: 1;">PNG (无损)</el-radio-button>
             <el-radio-button label="image/jpeg" style="flex: 1;">JPEG (压缩)</el-radio-button>
             <el-radio-button label="image/webp" style="flex: 1;">WebP (高效)</el-radio-button>
@@ -521,8 +521,8 @@ defineExpose({ open })
   color: #303133;
 }
 
-/* 调整 Radio Button 组的样式使其填满容器 */
-:deep(.el-radio-group .el-radio-button__inner) {
+/* 调整 Radio Button 组的样式使其填满容器 - 只针对目标格式 */
+:deep(.target-format-group .el-radio-button__inner) {
     width: 100%;
     padding: 10px 0; /* 增加点击区域高度 */
 }
