@@ -99,80 +99,31 @@ window.addEventListener('resize', () => {
 const screenshotManager = new ScreenshotManager();
 
 /**
- * 从 File 对象加载 Image
- * @param {File} file 
- * @returns {Promise<HTMLImageElement>}
- */
-function loadImageFromFile(file) {
-    return new Promise((resolve, reject) => {
-        const url = URL.createObjectURL(file);
-        const img = new Image();
-        img.onload = () => {
-            URL.revokeObjectURL(url); // 释放内存
-            resolve(img);
-        };
-        img.onerror = () => {
-            URL.revokeObjectURL(url);
-            reject(new Error('Failed to load watermark image'));
-        };
-        img.src = url;
-    });
-}
-
-/**
  * 核心导出函数，供 Vue 组件调用
  * @param {Object} config 导出配置
  * @returns {Promise<Blob>}
  */
 export async function captureScene(config) {
-    const {
-        width,
-        height,
-        format,
-        watermark,
-        watermarkImage,
-        watermarkRepetition,
-        watermarkAngle,
-        watermarkColor,
-        watermarkFontSize,
-        watermarkSpacing,  // 新增：解构间距参数
-        watermarkPosition, // 添加水印位置参数
-        watermarkType,
-        watermarkImageScale,
-        watermarkOpacity,
-        onProgress
-    } = config;
+  const {
+    width,
+    height,
+    format,
+    onProgress
+  } = config;
 
-    // 构建水印配置对象
-    let watermarkConfig = null;
-    if (watermark) {
-        watermarkConfig = {
-            text: watermark,
-            fontSize: watermarkFontSize || Math.floor(width * 0.025), // 动态字体大小
-            color: watermarkColor || 'rgba(255, 255, 255, 0.8)',
-            position: watermarkPosition || 'bottom-right', // 使用传递的位置参数
-            repetition: watermarkRepetition || false,
-            angle: watermarkAngle || 0,
-            spacing: watermarkSpacing || (width / 3)  // 新增：间距参数，默认匹配3列
-        };
+  console.log('[DEBUG] main.js captureScene 接收到的配置:', config)
+  console.log('[DEBUG] 图片水印配置:', config.imageWatermark)
 
-        // 如果用户提供了水印图片，则添加图片水印
-        if (watermarkImage && (watermarkType === 'image' || watermarkType === 'both')) {
-            // 将 File 对象加载为 HTMLImageElement
-            const loadedImage = await loadImageFromFile(watermarkImage);
-            watermarkConfig.image = loadedImage;
-            watermarkConfig.opacity = watermarkOpacity || 0.8;
-            watermarkConfig.scale = watermarkImageScale || 1;
-        }
-    }
-
-    return await screenshotManager.capture(renderer, scene, camera, {
-        width,
-        height,
-        format,
-        quality: 0.95,
-        watermark: watermarkConfig,
-        onProgress
-    });
+  return await screenshotManager.capture(renderer, scene, camera, {
+    width,
+    height,
+    format,
+    quality: 0.95,
+    watermark: {
+      textWatermark: config.textWatermark,
+      imageWatermark: config.imageWatermark
+    },
+    onProgress
+  });
 }
 

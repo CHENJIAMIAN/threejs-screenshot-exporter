@@ -12,6 +12,7 @@ import { drawWatermark } from './WatermarkUtils.js';
  */
 export class ScreenshotManager {
     constructor(renderer) {
+        this.renderer = renderer;
     }
 
     /**
@@ -31,7 +32,7 @@ export class ScreenshotManager {
             height = 1080,
             format = 'image/png',
             quality = 0.9,
-            watermark = null, // { text, image, ... }
+            watermark = null, // Now expects { textWatermark: {...}, imageWatermark: {...} }
             onProgress = null // (progress: number) => void
         } = options;
 
@@ -121,6 +122,8 @@ export class ScreenshotManager {
 
             // 4. 绘制水印
             if (watermark) {
+                console.log('[DEBUG] ScreenshotManager 开始绘制水印, watermark配置:', watermark)
+                console.log('[DEBUG] 图片水印详细状态:', watermark.imageWatermark)
                 await this._drawWatermark(ctx, width, height, watermark);
             }
 

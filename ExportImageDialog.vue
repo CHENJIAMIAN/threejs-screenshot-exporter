@@ -73,62 +73,42 @@
 
       <!-- 分组2:水印选项 -->
       <el-card shadow="never" class="setting-card" style="margin-top: 16px;">
-        <!-- UX优化:使用 Switch 开关代替复选框,头部整合在一行 -->
+        <!-- 文字水印组 -->
+          <!-- UX优化:使用 Switch 开关代替复选框,头部整合在一行 -->
         <div class="switch-header-row">
-          <span class="switch-label">启用添加水印</span>
-          <el-switch v-model="form.hasWatermark" />
+          <span class="switch-label">启用文字水印</span>
+          <el-switch v-model="form.textWatermark.enabled" />
         </div>
-
         <el-collapse-transition>
-          <div v-if="form.hasWatermark" style="margin-top: 16px;">
-            <el-form-item label="水印类型" style="margin-bottom: 12px;">
-              <el-radio-group v-model="form.watermarkType" style="width: 100%;">
-                <el-radio-button label="text">文字水印</el-radio-button>
-                <el-radio-button label="image">图片水印</el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-
+          <div v-if="form.textWatermark.enabled" class="watermark-group" style="margin-top: 16px;">
             <el-form-item label="水印内容文字">
               <el-input
-                v-model="form.watermarkText"
+                v-model="form.textWatermark.text"
                 placeholder="请输入将在画面中显示的水印文字"
-                :disabled="form.watermarkType === 'image'"
                 clearable
                 :prefix-icon="EditPen"
               />
             </el-form-item>
 
-            <el-form-item label="水印图片" v-if="form.watermarkType === 'image'">
-              <el-upload
-                class="watermark-upload"
-                :auto-upload="false"
-                :show-file-list="false"
-                @change="handleImageUpload"
-                accept=".jpg,.jpeg,.png,.bmp"
-              >
-                <el-button size="small" type="primary">上传图片</el-button>
-              </el-upload>
-            </el-form-item>
-
-            <el-row :gutter="20" v-if="form.watermarkType === 'text'">
+            <el-row :gutter="20">
                 <el-col :span="12">
                      <el-form-item label="水印颜色">
-                        <el-color-picker v-model="form.watermarkColor" show-alpha />
+                        <el-color-picker v-model="form.textWatermark.color" show-alpha />
                     </el-form-item>
                 </el-col>
                 <el-col :span="12">
                      <el-form-item label="全屏平铺">
-                        <el-switch v-model="form.watermarkRepetition" />
+                        <el-switch v-model="form.textWatermark.repetition" />
                     </el-form-item>
                 </el-col>
             </el-row>
 
             <!-- 新增：平铺间距控件，仅全屏平铺时显示 -->
             <el-collapse-transition>
-              <div v-if="form.watermarkRepetition">
+              <div v-if="form.textWatermark.repetition">
                 <el-form-item label="平铺间距 (像素)">
                   <el-slider 
-                    v-model="form.watermarkSpacing" 
+                    v-model="form.textWatermark.spacing" 
                     :min="50" 
                     :max="2000" 
                     :step="10" 
@@ -138,11 +118,13 @@
               </div>
             </el-collapse-transition>
 
+
+
             <!-- 水印位置配置（仅在关闭全屏平铺时显示） -->
             <el-collapse-transition>
-              <div v-if="!form.watermarkRepetition">
+              <div v-if="!form.textWatermark.repetition">
                 <el-form-item label="水印位置">
-                  <el-radio-group v-model="form.watermarkPosition" style="width: 100%;">
+                  <el-radio-group v-model="form.textWatermark.position" style="width: 100%;">
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
                       <el-radio-button label="top-left">左上</el-radio-button>
                       <el-radio-button label="top-center">居中上</el-radio-button>
@@ -160,34 +142,98 @@
             </el-collapse-transition>
 
             <el-form-item label="旋转角度">
-                <el-slider v-model="form.watermarkAngle" :min="-180" :max="180" :marks="{0:'0°', 90:'90°', '-90':'-90°'}" />
+                <el-slider v-model="form.textWatermark.angle" :min="-180" :max="180" :marks="{0:'0°', 90:'90°', '-90':'-90°'}" />
             </el-form-item>
 
             <el-form-item label="字体大小">
-                 <el-slider v-model="form.watermarkFontSize" :min="12" :max="200" show-input />
+                 <el-slider v-model="form.textWatermark.fontSize" :min="12" :max="200" show-input />
             </el-form-item>
-
-            <el-form-item label="图片弹出程度" v-if="form.watermarkType === 'image'">
-              <el-row :gutter="12">
-                <el-col :span="12">
-                  <el-form-item label="缩放比例">
-                    <el-slider v-model="form.imageZoom" :min="0.5" :max="5" :step="0.1" show-input />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="透明度">
-                    <el-slider v-model="form.imageOpacity" :min="0" :max="1" :step="0.01" show-input />
-                  </el-form-item>
-                </el-col>
-              </el-row>
-            </el-form-item>
-
-            <div class="preview-container">
-                <div class="preview-label">水印预览</div>
-                <canvas ref="previewCanvasRef" class="preview-canvas"></canvas>
-            </div>
           </div>
         </el-collapse-transition>
+
+        <!-- 图片水印组 -->
+          <!-- UX优化:使用 Switch 开关代替复选框,头部整合在一行 -->
+        <div class="switch-header-row">
+          <span class="switch-label">启用图片水印</span>
+          <el-switch v-model="form.imageWatermark.enabled" />
+        </div>
+        <el-collapse-transition>
+          <div v-if="form.imageWatermark.enabled" class="watermark-group" style="margin-top: 16px;">
+            <el-form-item label="水印图片">
+              <el-upload
+                class="watermark-upload"
+                :auto-upload="false"
+                :show-file-list="false"
+                @change="handleImageUpload"
+                accept=".jpg,.jpeg,.png,.bmp"
+              >
+                <el-button size="small" type="primary">上传图片</el-button>
+              </el-upload>
+            </el-form-item>
+
+            <!-- 单列布局：旋转角度 -->
+            <el-form-item label="旋转角度">
+                <el-slider v-model="form.imageWatermark.angle" :min="-180" :max="180" :marks="{0:'0°', 90:'90°', '-90':'-90°'}" />
+            </el-form-item>
+
+            <!-- 单列布局：缩放比例 -->
+            <el-form-item label="缩放比例">
+                <el-slider v-model="form.imageWatermark.zoom" :min="0.5" :max="5" :step="0.1" show-input />
+            </el-form-item>
+
+            <!-- 单列布局：透明度 -->
+            <el-form-item label="透明度">
+                <el-slider v-model="form.imageWatermark.opacity" :min="0" :max="1" :step="0.1" show-input />
+            </el-form-item>
+
+            <!-- 单列布局：平铺开关 -->
+            <el-form-item label="平铺">
+                <el-switch v-model="form.imageWatermark.repetition" />
+            </el-form-item>
+
+            <!-- 图片水印的平铺间距控件，仅全屏平铺时显示 -->
+            <el-collapse-transition>
+              <div v-if="form.imageWatermark.repetition">
+                <el-form-item label="平铺间距 (像素)">
+                  <el-slider 
+                    v-model="form.imageWatermark.spacing" 
+                    :min="50" 
+                    :max="2000" 
+                    :step="10" 
+                    show-input 
+                  />
+                </el-form-item>
+              </div>
+            </el-collapse-transition>
+
+            <!-- 水印位置配置（仅在关闭全屏平铺时显示） -->
+            <el-collapse-transition>
+              <div v-if="!form.imageWatermark.repetition">
+                <el-form-item label="水印位置">
+                  <el-radio-group v-model="form.imageWatermark.position" style="width: 100%;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                      <el-radio-button label="top-left">左上</el-radio-button>
+                      <el-radio-button label="top-center">居中上</el-radio-button>
+                      <el-radio-button label="top-right">右上</el-radio-button>
+                      <el-radio-button label="center-left">左中</el-radio-button>
+                      <el-radio-button label="center">正中</el-radio-button>
+                      <el-radio-button label="center-right">右中</el-radio-button>
+                      <el-radio-button label="bottom-left">左下</el-radio-button>
+                      <el-radio-button label="bottom-center">居中下</el-radio-button>
+                      <el-radio-button label="bottom-right">右下</el-radio-button>
+                    </div>
+                  </el-radio-group>
+                </el-form-item>
+              </div>
+            </el-collapse-transition>
+          </div>
+        </el-collapse-transition>
+
+        <!-- 恢复水印预览功能 -->
+        <div class="preview-container">
+          <div class="preview-label">水印预览</div>
+          <canvas ref="previewCanvasRef" class="preview-canvas"></canvas>
+        </div>
       </el-card>
     </el-form>
 
@@ -223,23 +269,29 @@ const form = reactive({
   customWidth: 1920,
   customHeight: 1080,
   format: 'image/png',
-  hasWatermark: true, // Switch 默认状态
-  watermarkText: 'Three.js Industrial Demo',
-  watermarkColor: 'rgba(255, 255, 255, 0.6)',
-  watermarkRepetition: true, // 默认开启全屏平铺
-  watermarkAngle: 45,
-  watermarkFontSize: 24,
-  watermarkSpacing: 1280,  // 新增：默认间距，匹配原3x3网格
-  watermarkPosition: 'bottom-right', // 水印位置（仅在非平铺模式下使用）
-  watermarkType: 'text',
-  watermarkImageFile: null,
-  watermarkImageUrl: '',
-  watermarkImage: null,  // 新增：显式声明，提高响应性和类型安全
-  imageZoom: 1,
-  imageOpacity: 1
+  textWatermark: {
+    enabled: true,
+    text: 'Three.js Industrial Demo',
+    color: 'rgba(255, 255, 255, 0.6)',
+    repetition: true,
+    angle: 45,
+    fontSize: 24,
+    spacing: 1280,  // 新增：默认间距，匹配原3x3网格
+    position: 'bottom-right', // 水印位置（仅在非平铺模式下使用）
+  },
+  imageWatermark: {
+    enabled: true, // Switch 默认状态
+    imageUrl: '',
+    imageFile: null,
+    angle: 0,
+    position: 'bottom-right',
+    zoom: 1,
+    opacity: 1,
+    repetition: false,
+    image: null,
+    spacing: 1280  // 新增：图片水印的平铺间距，与文字水印保持一致
+  }
 })
-
-const imagePreviewUrl = ref('')
 
 const resolutionOptions = [
   { label: '1080p (1920 x 1080)', value: '1920x1080' },
@@ -264,42 +316,65 @@ const open = () => {
     })
 }
 const handleClose = () => {
-  // 清理水印图片资源，避免内存泄漏
-  if (form.watermarkImageUrl) {
-    URL.revokeObjectURL(form.watermarkImageUrl)
-    form.watermarkImageUrl = ''
+  console.log('[DEBUG] handleClose 被调用，检查是否需要清理URL')
+  
+  // 【注意】延迟清理URL，避免在导出过程中被销毁
+  // 如果正在导出，不清理资源
+  if (!exporting.value) {
+    console.log('[DEBUG] 非导出状态，清理图片资源')
+    if (form.imageWatermark.imageUrl) {
+      URL.revokeObjectURL(form.imageWatermark.imageUrl)
+      form.imageWatermark.imageUrl = ''
+    }
+    form.imageWatermark.image = null
+  } else {
+    console.log('[DEBUG] 导出状态中，暂不清理资源')
   }
-  form.watermarkImage = null
   
   visible.value = false
 }
 
 const handleImageUpload = (file) => {
+  console.log('[DEBUG] 开始处理图片上传:', file)
+  
   // 清理旧资源
-  if (form.watermarkImageUrl) {
-    URL.revokeObjectURL(form.watermarkImageUrl)
+  if (form.imageWatermark.imageUrl) {
+    URL.revokeObjectURL(form.imageWatermark.imageUrl)
   }
   
-  form.watermarkImageFile = file.raw
-  form.watermarkImageUrl = URL.createObjectURL(file.raw)
-  form.watermarkImage = new Image()
-  form.watermarkImage.src = form.watermarkImageUrl
+  form.imageWatermark.imageFile = file.raw
+  form.imageWatermark.imageUrl = URL.createObjectURL(file.raw)
+  form.imageWatermark.image = new Image()
+  form.imageWatermark.image.src = form.imageWatermark.imageUrl
   
-  form.watermarkImage.onload = () => {
+  console.log('[DEBUG] 设置图片URL:', form.imageWatermark.imageUrl)
+  
+  form.imageWatermark.image.onload = () => {
+    console.log('[DEBUG] 图片加载完成，更新预览')
+    console.log('[DEBUG] 图片尺寸:', form.imageWatermark.image.naturalWidth, 'x', form.imageWatermark.image.naturalHeight)
     ElMessage.success('水印图片上传成功，已更新预览')
     nextTick(() => {
       updatePreview()
     })
   }
   
-  form.watermarkImage.onerror = () => {
+  form.imageWatermark.image.onerror = (error) => {
+    console.error('[DEBUG] 图片加载失败:', error)
     ElMessage.error('无效的水印图片')
     // 清理无效资源
-    if (form.watermarkImageUrl) {
-      URL.revokeObjectURL(form.watermarkImageUrl)
-      form.watermarkImageUrl = ''
+    if (form.imageWatermark.imageUrl) {
+      URL.revokeObjectURL(form.imageWatermark.imageUrl)
+      form.imageWatermark.imageUrl = ''
     }
-    form.watermarkImage = null
+    form.imageWatermark.image = null
+  }
+  
+  // 检查图片是否已经在浏览器缓存中
+  if (form.imageWatermark.image.complete && form.imageWatermark.image.naturalWidth > 0) {
+    console.log('[DEBUG] 图片已在缓存中，立即更新预览')
+    nextTick(() => {
+      updatePreview()
+    })
   }
   
   // 阻止 el-upload 的自动上传行为
@@ -307,26 +382,27 @@ const handleImageUpload = (file) => {
 }
 
 const updatePreview = async () => {
-  console.log('[DEBUG] updatePreview called, config:', {
-    hasWatermark: form.hasWatermark,
-    watermarkType: form.watermarkType,
-    hasImageFile: !!form.watermarkImageFile,
-    hasImage: !!form.watermarkImage,
-    imageComplete: form.watermarkImage ? form.watermarkImage.complete : false,
-    imageDims: form.watermarkImage ? `${form.watermarkImage.naturalWidth}x${form.watermarkImage.naturalHeight}` : 'N/A'
-  })
+  console.log('[DEBUG] updatePreview called')
+  console.log('[DEBUG] 文字水印状态:', form.textWatermark.enabled, '文字:', form.textWatermark.text.trim())
+  console.log('[DEBUG] 图片水印状态:', form.imageWatermark.enabled)
+  console.log('[DEBUG] 图片对象:', form.imageWatermark.image)
+  console.log('[DEBUG] 图片URL:', form.imageWatermark.imageUrl)
+  console.log('[DEBUG] 图片缩放:', form.imageWatermark.zoom)
+  
+
+  
   if (!previewCanvasRef.value) {
     console.warn('[DEBUG] No preview canvas ref')
     return;
   }
-  
+
   const canvas = previewCanvasRef.value
   const ctx = canvas.getContext('2d')
-  
+
   const containerWidth = canvas.parentElement.clientWidth
   const actualRes = finalResolution.value
   const actualAspect = actualRes.width / actualRes.height
-  
+
   // 计算预览尺寸，匹配实际宽高比，最大适应容器（宽≤容器宽，高≤200px）
   let previewWidth = Math.min(containerWidth, 400)
   let previewHeight = previewWidth / actualAspect
@@ -334,14 +410,14 @@ const updatePreview = async () => {
       previewHeight = 200
       previewWidth = previewHeight * actualAspect
   }
-  
+
   canvas.width = previewWidth
   canvas.height = previewHeight
-  
+
   // 绘制背景
   ctx.fillStyle = '#333'
   ctx.fillRect(0, 0, previewWidth, previewHeight)
-  
+
   // 棋盘网格模拟透明背景，固定像素大小
   ctx.fillStyle = '#444'
   const gridSize = 10
@@ -351,56 +427,56 @@ const updatePreview = async () => {
           ctx.fillRect(i + gridSize, j + gridSize, gridSize, gridSize)
       }
   }
-  
+
   // 水印预览：scale模拟实际尺寸，确保相对位置/大小一致
-  if (form.hasWatermark) {
+  const hasTextWatermark = form.textWatermark.enabled && form.textWatermark.text.trim()
+  const hasImageWatermark = form.imageWatermark.enabled && form.imageWatermark.image && form.imageWatermark.image.naturalWidth > 0
+
+  console.log('[DEBUG] hasTextWatermark:', hasTextWatermark)
+  console.log('[DEBUG] hasImageWatermark:', hasImageWatermark)
+
+  if (hasTextWatermark || hasImageWatermark) {
       ctx.save()
-      
+
       const scaleX = previewWidth / actualRes.width
       const scaleY = previewHeight / actualRes.height
       ctx.scale(scaleX, scaleY)
-      
-      // 与实际导出相同的配置 - 完善配置参数
+
+      // 创建与WatermarkUtils兼容的嵌套配置结构
       const previewConfig = {
-          text: form.watermarkText,
-          color: form.watermarkColor,
-          fontSize: form.watermarkFontSize,
-          repetition: form.watermarkRepetition,
-          angle: form.watermarkAngle,
-          position: form.watermarkPosition,
-          spacing: form.watermarkSpacing,
+        textWatermark: hasTextWatermark ? {
+          enabled: form.textWatermark.enabled,
+          text: form.textWatermark.text,
+          color: form.textWatermark.color,
+          fontSize: form.textWatermark.fontSize,
+          repetition: form.textWatermark.repetition,
+          angle: form.textWatermark.angle,
+          position: form.textWatermark.position,
+          spacing: form.textWatermark.spacing
+        } : null,
+        imageWatermark: hasImageWatermark ? {
+          enabled: form.imageWatermark.enabled,
+          image: form.imageWatermark.image,
+          scale: form.imageWatermark.zoom,
+          opacity: form.imageWatermark.opacity,
+          repetition: form.imageWatermark.repetition,
+          position: form.imageWatermark.position,
+          angle: form.imageWatermark.angle,
+          spacing: form.imageWatermark.spacing
+        } : null
       }
-      
-      // 图片水印配置
-      if (form.watermarkType === 'image' && form.watermarkImage) {
-        console.log('[DEBUG] Setting image config for preview');
-        previewConfig.image = form.watermarkImage;
-        previewConfig.scale = form.imageZoom;
-        previewConfig.opacity = form.imageOpacity;
-      }
-      
+
+      console.log('[DEBUG] 预览配置:', previewConfig)
+      console.log('[DEBUG] 开始绘制水印...')
+
       await drawWatermark(ctx, actualRes.width, actualRes.height, previewConfig)
-      
+
       ctx.restore()
+      console.log('[DEBUG] 水印绘制完成')
+  } else {
+    console.log('[DEBUG] 没有启用的水印，跳过绘制')
   }
 }
-
-// 监听表单变化更新预览
-watch(form, () => {
-  if (visible.value) {
-    updatePreview()
-  }
-}, { deep: true })
-
-// 监听水印开关变化，确保切换时立即更新预览
-watch(() => form.hasWatermark, (newVal) => {
-  if (visible.value) {
-    console.log('水印开关状态变化:', newVal)
-    nextTick(() => {
-      updatePreview()
-    })
-  }
-})
 
 const handleExport = async () => {
   // 简单的校验
@@ -408,38 +484,65 @@ const handleExport = async () => {
       ElMessage.warning('请输入有效的自定义尺寸')
       return
   }
-  if (form.hasWatermark && !form.watermarkText.trim()) {
-      ElMessage.warning('请填写水印内容或关闭水印开关')
+  if (form.textWatermark.enabled && !form.textWatermark.text.trim()) {
+      ElMessage.warning('请填写文字水印内容或关闭文字水印开关')
       return
   }
-  if (form.hasWatermark && form.watermarkType === 'image') {
-      if (!form.watermarkImageFile) {
-          ElMessage.warning('请上传水印图片')
-          return
-      }
+  if (form.imageWatermark.enabled && !form.imageWatermark.imageFile) {
+      ElMessage.warning('请上传图片水印或关闭图片水印开关')
+      return
   }
 
   exporting.value = true
-  
+
+  // 【调试】验证图片水印状态
+  console.log('=== [DEBUG] 导出前验证图片水印状态 ===')
+  console.log('图片水印启用状态:', form.imageWatermark.enabled)
+  console.log('图片文件对象:', form.imageWatermark.imageFile)
+  console.log('图片URL:', form.imageWatermark.imageUrl)
+  console.log('图片对象:', form.imageWatermark.image)
+  console.log('图片对象完整性检查:')
+  if (form.imageWatermark.image) {
+    console.log('  - complete:', form.imageWatermark.image.complete)
+    console.log('  - naturalWidth:', form.imageWatermark.image.naturalWidth)
+    console.log('  - naturalHeight:', form.imageWatermark.image.naturalHeight)
+    console.log('  - src:', form.imageWatermark.image.src)
+    console.log('  - 对象类型:', typeof form.imageWatermark.image)
+    console.log('  - 实例检查:', form.imageWatermark.image instanceof HTMLImageElement)
+  }
+  console.log('=== [DEBUG] 验证结束 ===')
+
   const exportData = {
     width: finalResolution.value.width,
     height: finalResolution.value.height,
     format: form.format,
-    watermark: form.hasWatermark ? form.watermarkText : null,
-    watermarkColor: form.hasWatermark ? form.watermarkColor : null,
-    watermarkRepetition: form.hasWatermark ? form.watermarkRepetition : false,
-    watermarkAngle: form.hasWatermark ? form.watermarkAngle : 0,
-    watermarkFontSize: form.hasWatermark ? form.watermarkFontSize : 0,
-    watermarkSpacing: form.hasWatermark ? form.watermarkSpacing : 1280,  // 新增
-    watermarkPosition: form.hasWatermark ? form.watermarkPosition : 'bottom-right',
-    watermarkType: form.watermarkType,
-    watermarkImage: form.watermarkImageFile,
-    watermarkImageScale: form.imageZoom,
-    watermarkOpacity: form.imageOpacity,
+    textWatermark: {
+      enabled: form.textWatermark.enabled,
+      text: form.textWatermark.text,
+      color: form.textWatermark.color,
+      repetition: form.textWatermark.repetition,
+      angle: form.textWatermark.angle,
+      position: form.textWatermark.position,
+      fontSize: form.textWatermark.fontSize,
+      spacing: form.textWatermark.spacing,
+    },
+    imageWatermark: {
+      enabled: form.imageWatermark.enabled,
+      imageUrl: form.imageWatermark.imageUrl,
+      imageFile: form.imageWatermark.imageFile,
+      // 【关键】确保图片对象也被传递
+      image: form.imageWatermark.image,
+      angle: form.imageWatermark.angle,
+      position: form.imageWatermark.position,
+      zoom: form.imageWatermark.zoom,
+      opacity: form.imageWatermark.opacity,
+      repetition: form.imageWatermark.repetition,
+      spacing: form.imageWatermark.spacing
+    }
   }
-  
-  console.log('准备导出数据:', exportData)
-  
+
+  console.log('[DEBUG] 准备导出数据:', exportData)
+
   // 通过事件抛出给父组件处理
   emit('export', exportData, {
     // 导出完成的回调
@@ -460,6 +563,34 @@ const handleExport = async () => {
     }
   })
 }
+
+// 优化性能：合并所有水印相关的监听器为单个复合监听器
+watch([
+  () => form.resolutionPreset,
+  () => form.customWidth,
+  () => form.customHeight,
+  // 文字水印相关
+  () => form.textWatermark.enabled,
+  () => form.textWatermark.text,
+  () => form.textWatermark.color,
+  () => form.textWatermark.repetition,
+  () => form.textWatermark.angle,
+  () => form.textWatermark.fontSize,
+  () => form.textWatermark.spacing,
+  () => form.textWatermark.position,
+  // 图片水印相关
+  () => form.imageWatermark.enabled,
+  () => form.imageWatermark.angle,
+  () => form.imageWatermark.zoom,
+  () => form.imageWatermark.opacity,
+  () => form.imageWatermark.repetition,
+  () => form.imageWatermark.position,
+  () => form.imageWatermark.spacing
+], () => {
+  nextTick(() => {
+    updatePreview()
+  })
+})
 
 defineExpose({ open })
 </script>
@@ -546,5 +677,13 @@ defineExpose({ open })
     display: block;
     width: 100%;
     height: 200px;
+}
+
+.watermark-group {
+  margin-top: 16px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+  padding: 16px;
+  border: 1px dashed #dcdfe6;
 }
 </style>
