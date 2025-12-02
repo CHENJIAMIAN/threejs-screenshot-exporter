@@ -6,9 +6,6 @@
  * @param {Object} config - Now contains textWatermark and imageWatermark objects
  */
 export async function drawWatermark(ctx, width, height, config) {
-    console.log("[DEBUG] drawWatermark 开始绘制水印")
-    console.log("[DEBUG] 画布尺寸:", width, "x", height)
-    console.log("[DEBUG] 配置:", config)
     
     const padding = Math.max(20, width * 0.02); // 动态边距
 
@@ -71,9 +68,7 @@ export async function drawWatermark(ctx, width, height, config) {
         // 1. 图片水印
         if (watermarkConfig.image) {
             try {
-                console.log("[DEBUG] 开始绘制图片水印:", watermarkConfig.image)
                 const img = watermarkConfig.image;
-                console.log("[DEBUG] 图片原始尺寸:", img.naturalWidth, "x", img.naturalHeight)
                 
                 // 检查图片是否加载成功
                 if (!img.complete || img.naturalWidth === 0 || img.naturalHeight === 0) {
@@ -85,11 +80,9 @@ export async function drawWatermark(ctx, width, height, config) {
                 const baseW = width * 0.15;
                 const w = baseW * (watermarkConfig.scale || 1);
                 const h = w * (img.naturalHeight / img.naturalWidth);
-                console.log("[DEBUG] 计算后的绘制尺寸:", w, "x", h)
                 
                 // 居中绘制以便旋转
                 ctx.drawImage(img, -w / 2, -h / 2, w, h);
-                console.log("[DEBUG] 图片水印绘制完成")
             } catch (e) {
                 console.error("[截图] 水印图片绘制失败:", e);
             }
@@ -136,13 +129,6 @@ export async function drawWatermark(ctx, width, height, config) {
 
     // Handle image watermark if enabled
     if (config.imageWatermark && config.imageWatermark.enabled && config.imageWatermark.image) {
-        console.log("[DEBUG] 检测到图片水印配置:", config.imageWatermark)
-        console.log("[DEBUG] 图片对象详细信息:")
-        console.log("  - image对象:", config.imageWatermark.image)
-        console.log("  - complete:", config.imageWatermark.image.complete)
-        console.log("  - naturalWidth:", config.imageWatermark.image.naturalWidth)
-        console.log("  - naturalHeight:", config.imageWatermark.image.naturalHeight)
-        console.log("  - src:", config.imageWatermark.image.src)
         const imageConfig = config.imageWatermark;
 
         if (imageConfig.repetition) {
@@ -168,5 +154,4 @@ export async function drawWatermark(ctx, width, height, config) {
     }
 
     ctx.restore();
-    console.log("[DEBUG] drawWatermark 绘制完成")
 }

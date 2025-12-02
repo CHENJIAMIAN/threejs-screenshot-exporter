@@ -316,27 +316,20 @@ const open = () => {
     })
 }
 const handleClose = () => {
-  console.log('[DEBUG] handleClose 被调用，检查是否需要清理URL')
-  
   // 【注意】延迟清理URL，避免在导出过程中被销毁
   // 如果正在导出，不清理资源
   if (!exporting.value) {
-    console.log('[DEBUG] 非导出状态，清理图片资源')
     if (form.imageWatermark.imageUrl) {
       URL.revokeObjectURL(form.imageWatermark.imageUrl)
       form.imageWatermark.imageUrl = ''
     }
     form.imageWatermark.image = null
-  } else {
-    console.log('[DEBUG] 导出状态中，暂不清理资源')
   }
   
   visible.value = false
 }
 
 const handleImageUpload = (file) => {
-  console.log('[DEBUG] 开始处理图片上传:', file)
-  
   // 清理旧资源
   if (form.imageWatermark.imageUrl) {
     URL.revokeObjectURL(form.imageWatermark.imageUrl)
@@ -347,11 +340,7 @@ const handleImageUpload = (file) => {
   form.imageWatermark.image = new Image()
   form.imageWatermark.image.src = form.imageWatermark.imageUrl
   
-  console.log('[DEBUG] 设置图片URL:', form.imageWatermark.imageUrl)
-  
   form.imageWatermark.image.onload = () => {
-    console.log('[DEBUG] 图片加载完成，更新预览')
-    console.log('[DEBUG] 图片尺寸:', form.imageWatermark.image.naturalWidth, 'x', form.imageWatermark.image.naturalHeight)
     ElMessage.success('水印图片上传成功，已更新预览')
     nextTick(() => {
       updatePreview()
@@ -359,7 +348,6 @@ const handleImageUpload = (file) => {
   }
   
   form.imageWatermark.image.onerror = (error) => {
-    console.error('[DEBUG] 图片加载失败:', error)
     ElMessage.error('无效的水印图片')
     // 清理无效资源
     if (form.imageWatermark.imageUrl) {
@@ -371,7 +359,6 @@ const handleImageUpload = (file) => {
   
   // 检查图片是否已经在浏览器缓存中
   if (form.imageWatermark.image.complete && form.imageWatermark.image.naturalWidth > 0) {
-    console.log('[DEBUG] 图片已在缓存中，立即更新预览')
     nextTick(() => {
       updatePreview()
     })
@@ -382,17 +369,7 @@ const handleImageUpload = (file) => {
 }
 
 const updatePreview = async () => {
-  console.log('[DEBUG] updatePreview called')
-  console.log('[DEBUG] 文字水印状态:', form.textWatermark.enabled, '文字:', form.textWatermark.text.trim())
-  console.log('[DEBUG] 图片水印状态:', form.imageWatermark.enabled)
-  console.log('[DEBUG] 图片对象:', form.imageWatermark.image)
-  console.log('[DEBUG] 图片URL:', form.imageWatermark.imageUrl)
-  console.log('[DEBUG] 图片缩放:', form.imageWatermark.zoom)
-  
-
-  
   if (!previewCanvasRef.value) {
-    console.warn('[DEBUG] No preview canvas ref')
     return;
   }
 
@@ -432,9 +409,6 @@ const updatePreview = async () => {
   const hasTextWatermark = form.textWatermark.enabled && form.textWatermark.text.trim()
   const hasImageWatermark = form.imageWatermark.enabled && form.imageWatermark.image && form.imageWatermark.image.naturalWidth > 0
 
-  console.log('[DEBUG] hasTextWatermark:', hasTextWatermark)
-  console.log('[DEBUG] hasImageWatermark:', hasImageWatermark)
-
   if (hasTextWatermark || hasImageWatermark) {
       ctx.save()
 
@@ -466,15 +440,9 @@ const updatePreview = async () => {
         } : null
       }
 
-      console.log('[DEBUG] 预览配置:', previewConfig)
-      console.log('[DEBUG] 开始绘制水印...')
-
       await drawWatermark(ctx, actualRes.width, actualRes.height, previewConfig)
 
       ctx.restore()
-      console.log('[DEBUG] 水印绘制完成')
-  } else {
-    console.log('[DEBUG] 没有启用的水印，跳过绘制')
   }
 }
 
@@ -494,23 +462,6 @@ const handleExport = async () => {
   }
 
   exporting.value = true
-
-  // 【调试】验证图片水印状态
-  console.log('=== [DEBUG] 导出前验证图片水印状态 ===')
-  console.log('图片水印启用状态:', form.imageWatermark.enabled)
-  console.log('图片文件对象:', form.imageWatermark.imageFile)
-  console.log('图片URL:', form.imageWatermark.imageUrl)
-  console.log('图片对象:', form.imageWatermark.image)
-  console.log('图片对象完整性检查:')
-  if (form.imageWatermark.image) {
-    console.log('  - complete:', form.imageWatermark.image.complete)
-    console.log('  - naturalWidth:', form.imageWatermark.image.naturalWidth)
-    console.log('  - naturalHeight:', form.imageWatermark.image.naturalHeight)
-    console.log('  - src:', form.imageWatermark.image.src)
-    console.log('  - 对象类型:', typeof form.imageWatermark.image)
-    console.log('  - 实例检查:', form.imageWatermark.image instanceof HTMLImageElement)
-  }
-  console.log('=== [DEBUG] 验证结束 ===')
 
   const exportData = {
     width: finalResolution.value.width,
@@ -540,8 +491,6 @@ const handleExport = async () => {
       spacing: form.imageWatermark.spacing
     }
   }
-
-  console.log('[DEBUG] 准备导出数据:', exportData)
 
   // 通过事件抛出给父组件处理
   emit('export', exportData, {

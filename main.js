@@ -111,9 +111,6 @@ export async function captureScene(config) {
     onProgress
   } = config;
 
-  console.log('[DEBUG] main.js captureScene 接收到的配置:', config)
-  console.log('[DEBUG] 图片水印配置:', config.imageWatermark)
-
   return await screenshotManager.capture(renderer, scene, camera, {
     width,
     height,
