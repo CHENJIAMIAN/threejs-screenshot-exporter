@@ -25,25 +25,27 @@ A high-performance screenshot export tool for Three.js scenes, supporting ultra-
 - **📊 Real-time Progress**: Display real-time progress during export
 
 ### 🎨 Advanced Features
-- **💧 Watermark Support**: 
-  - Text watermarks (custom content, position, style)
-  - Image watermarks (support logos, etc.)
-  - Dynamic size adaptation
+- **💧 Enhanced Watermark System**: 
+  - **Text watermarks**: Custom content, 9 position options, font styles, colors, opacity
+  - **Image watermarks**: Support logos, scaling, opacity, rotation angles
+  - **Tiling mode**: Full-screen watermark with custom spacing
+  - **Dynamic adaptation**: Auto-adjust watermark size based on resolution
 - **🎭 Multiple Export Formats**: 
   - PNG (lossless)
   - JPEG (high compression)
   - WebP (modern efficient format)
-- **🎛️ Preset Resolutions**: 
-  - 1080p (1920×1080)
-  - 4K (3840×2160)
-  - 8K (7680×4320)
+- **🎛️ Flexible Resolutions**: 
+  - Preset resolutions: 1080p (1920×1080), 4K (3840×2160), 8K (7680×4320)
   - Custom size (up to 16384×16384)
+  - Smart tiled rendering to break GPU memory limits
 
 ### 🛠️ Technical Highlights
-- **Smart Shadow Handling**: Automatic ShadowMap updates for export quality
-- **Camera View Offset**: Precise tiled rendering using `setViewOffset`
-- **State Recovery**: Automatic restoration of original render state after export
-- **Memory Optimization**: Tiled processing + active thread yielding to avoid memory overflow
+- **🚀 Stable Tiled Rendering**: Smart tile size limit (2048px) for GPU stability
+- **🎯 Precise Viewport Control**: Pixel-perfect tiled rendering using `setViewOffset`
+- **🔄 Complete State Management**: Auto save/restore all render states before/after export
+- **⚡ Async Non-blocking**: Tiled processing + thread yielding for smooth UI
+- **🛡️ Error Recovery**: Comprehensive exception handling and resource cleanup
+- **📊 Real-time Progress**: Progress callback support for export visualization
 
 ---
 
@@ -96,21 +98,92 @@ link.download = 'screenshot.png';
 link.click();
 ```
 
-### Adding Watermarks
+### Advanced Watermark Features
 
+#### 1. Text Watermarks
 ```javascript
 const blob = await screenshotManager.capture(renderer, scene, camera, {
   width: 3840,
   height: 2160,
   format: 'image/png',
   watermark: {
-    text: 'My Work',
-    fontSize: 48,
-    color: 'rgba(255, 255, 255, 0.8)',
-    position: 'bottom-right',
-    // Optional: add image watermark
-    image: logoImage,
-    scale: 0.1
+    textWatermark: {
+      enabled: true,
+      text: 'My Work',
+      fontSize: 48,
+      color: 'rgba(255, 255, 255, 0.8)',
+      position: 'bottom-right', // 9 position options supported
+      angle: 15, // rotation angle
+      opacity: 0.8 // transparency
+    }
+  }
+});
+```
+
+#### 2. Image Watermarks
+```javascript
+const blob = await screenshotManager.capture(renderer, scene, camera, {
+  width: 3840,
+  height: 2160,
+  format: 'image/png',
+  watermark: {
+    imageWatermark: {
+      enabled: true,
+      image: logoImage,
+      position: 'top-left',
+      zoom: 1.2, // scale multiplier
+      opacity: 0.7,
+      angle: -10 // counter-clockwise rotation
+    }
+  }
+});
+```
+
+#### 3. Tiled Watermarks (Background Watermarks)
+```javascript
+const blob = await screenshotManager.capture(renderer, scene, camera, {
+  width: 3840,
+  height: 2160,
+  format: 'image/png',
+  watermark: {
+    textWatermark: {
+      enabled: true,
+      text: '© 2025 Copyright Protected',
+      repetition: true, // enable tiling mode
+      spacing: 300, // watermark spacing
+      fontSize: 36,
+      color: 'rgba(255, 255, 255, 0.3)',
+      angle: 45
+    }
+  }
+});
+```
+
+#### 4. Mixed Watermarks
+```javascript
+const blob = await screenshotManager.capture(renderer, scene, camera, {
+  width: 7680,
+  height: 4320,
+  format: 'image/png',
+  watermark: {
+    // Background tiled text watermark
+    textWatermark: {
+      enabled: true,
+      text: 'CONFIDENTIAL',
+      repetition: true,
+      spacing: 400,
+      fontSize: 48,
+      color: 'rgba(255, 0, 0, 0.2)',
+      angle: 30
+    },
+    // Bottom-right logo
+    imageWatermark: {
+      enabled: true,
+      image: companyLogo,
+      position: 'bottom-right',
+      zoom: 0.8,
+      opacity: 0.9
+    }
   }
 });
 ```
@@ -200,6 +273,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 ---
 
 ## 📝 Changelog
+
+### v1.0.1 (2025-12-02)
+- 💡 Enhanced watermark system: 9 position options, tiling mode, rotation angle support
+- 🛡️ Stability improvements: optimized tile size limits for better GPU compatibility
+- ⚡ Performance optimizations: improved error handling and resource cleanup
+- 📝 Documentation updates: README updates with detailed watermark usage examples
 
 ### v1.0.0 (2025-11-26)
 - ✨ Initial release
