@@ -464,7 +464,7 @@ const updatePreview = async () => {
         imageWatermark: hasImageWatermark ? {
           enabled: form.imageWatermark.enabled,
           image: form.imageWatermark.image,
-          scale: form.imageWatermark.zoom,
+          zoom: form.imageWatermark.zoom,
           opacity: form.imageWatermark.opacity,
           repetition: form.imageWatermark.repetition,
           position: form.imageWatermark.position,

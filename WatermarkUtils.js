@@ -78,7 +78,7 @@ export async function drawWatermark(ctx, width, height, config) {
                 
                 // 基础大小为宽度的 15%，然后应用用户的缩放倍数
                 const baseW = width * 0.15;
-                const w = baseW * (watermarkConfig.scale || 1);
+                const w = baseW * (watermarkConfig.zoom || 1);
                 const h = w * (img.naturalHeight / img.naturalWidth);
                 
                 // 居中绘制以便旋转
