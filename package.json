@@ -1,6 +1,6 @@
 {
   "name": "threejs-screenshot-exporter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "工业级 Three.js 高清截图导出工具,支持超高分辨率渲染、自定义水印和多种图片格式",
   "author": "CHENJIAMIAN",
   "license": "MIT",
