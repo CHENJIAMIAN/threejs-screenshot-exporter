@@ -1,3 +1,11 @@
+[English](./README.en.md)
+
+<!-- codex-github-rules:bilingual-summary -->
+> **中文简介**：基于 Three.js 的高性能场景截图导出工具，支持超高分辨率、水印和多种格式
+>
+> **English summary**: A high-performance Three.js scene screenshot exporter with ultra-high resolution, watermarks, and multiple formats
+
+---
 # Three.js 工业级高清截图导出工具
 
 <div align="center">
