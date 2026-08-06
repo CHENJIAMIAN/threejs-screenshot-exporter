@@ -1,5 +1,7 @@
 # 贡献指南
 
+> [English](CONTRIBUTING.en.md)
+
 感谢你考虑为本项目做出贡献! 🎉
 
 ## 🤝 如何贡献
